@@ -11,33 +11,34 @@ func NewGrpcServer(service Service) GrpcServer {
 }
 
 func (s GrpcServer) CreateSelection(req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionReply, error) {
-	selection, err := s.service.Create(CreateSelectionRequestToDto(req))
+	selection, err := s.service.Create(createSelectionRequestToDto(req))
 	if err != nil {
 		return nil, err
 	}
 
-	return DtoToCreateSelectionReply(selection), nil
+	return dtoToCreateSelectionReply(selection), nil
 }
 
 func (s GrpcServer) ParseSelection(req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionReply, error) {
-	rankedOptions, err := s.service.Parse(ParseSelectionRequestToDto(req))
+	rankedOptions, err := s.service.Parse(parseSelectionRequestToDto(req))
 	if err != nil {
 		return nil, err
 	}
 
-	return DtoToParseSelectionReply(rankedOptions), nil
+	return dtoToParseSelectionReply(rankedOptions), nil
 }
 
-func CreateSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) CreateSelectionRequest {
+func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) CreateSelectionRequest {
 	c := CreateSelectionRequest{
-		AppId:    req.AppId,
-		UserId:   req.UserId,
-		ServerId: req.ServerId,
+		AppId:     req.AppId,
+		UserId:    req.UserId,
+		ServerId:  req.ServerId,
+		Randomize: req.Randomize,
 	}
 
 	for _, reqOption := range req.Options {
 		option := Option{
-			Id:       reqOption.Id,
+			OptionId: reqOption.OptionId,
 			Content:  reqOption.Content,
 			Metadata: reqOption.Metadata,
 		}
@@ -48,14 +49,13 @@ func CreateSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 	return c
 }
 
-func DtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelectionReply {
+func dtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelectionReply {
 	reply := &selectionpb.CreateSelectionReply{}
 
-	for _, option := range selection.Options {
+	for _, dtoSelectionOption := range selection.Options {
 		selectionOption := &selectionpb.SelectionOption{
-			Id:       option.Id,
-			Content:  option.Content,
-			Metadata: option.Metadata,
+			SelectionOptionIndex: int32(dtoSelectionOption.SelectionOptionIndex),
+			Option:               dtoToOption(dtoSelectionOption.Option),
 		}
 
 		reply.SelectionOptions = append(reply.SelectionOptions, selectionOption)
@@ -64,7 +64,17 @@ func DtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelection
 	return reply
 }
 
-func ParseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSelectionRequest {
+func dtoToOption(dtoOption Option) *selectionpb.Option {
+	option := &selectionpb.Option{
+		OptionId: dtoOption.OptionId,
+		Content:  dtoOption.Content,
+		Metadata: dtoOption.Metadata,
+	}
+
+	return option
+}
+
+func parseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSelectionRequest {
 	p := ParseSelectionRequest{
 		AppId:    req.AppId,
 		UserId:   req.UserId,
@@ -75,13 +85,13 @@ func ParseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSel
 	return p
 }
 
-func DtoToParseSelectionReply(rankedOptions []RankedOption) *selectionpb.ParseSelectionReply {
+func dtoToParseSelectionReply(rankedOptions []RankedOption) *selectionpb.ParseSelectionReply {
 	reply := &selectionpb.ParseSelectionReply{}
 
 	for _, option := range rankedOptions {
 		rankedOption := &selectionpb.RankedOption{
-			Id:   option.Id,
-			Rank: option.Rank,
+			OptionId: option.OptionId,
+			Rank:     int32(option.Rank),
 		}
 
 		reply.RankedOptions = append(reply.RankedOptions, rankedOption)

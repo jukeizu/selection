@@ -11,23 +11,23 @@ message CreateSelectionRequest {
     string appId = 1;
     string userId = 2;
     string serverId = 3;
-    repeated Option options = 4;
+    bool randomize = 4;
+    repeated Option options = 5;
 }
 
 message Option {
-    string id = 1;
-    string content = 2;
-    map<string, string> metadata = 3;
-}
-
-message SelectionOption {
-    int32 id = 1;
+    string optionId = 1;
     string content = 2;
     map<string, string> metadata = 3;
 }
 
 message CreateSelectionReply {
     repeated SelectionOption selectionOptions = 1;
+}
+
+message SelectionOption {
+    int32 selectionOptionIndex = 1;
+    Option option = 2;
 }
 
 message ParseSelectionRequest {
@@ -38,7 +38,7 @@ message ParseSelectionRequest {
 }
 
 message RankedOption {
-    string id = 1;
+    string optionId = 1;
     int32 rank = 2;
 }
 
