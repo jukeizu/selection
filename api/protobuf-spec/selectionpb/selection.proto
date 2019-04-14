@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package selectionpb;
+
+service Selection {
+    rpc CreateSelection(CreateSelectionRequest) returns (CreateSelectionReply) {}
+    rpc ParseSelection(ParseSelectionRequest) returns (ParseSelectionReply) {}
+}
+
+message CreateSelectionRequest {
+    string appId = 1;
+    string userId = 2;
+    string serverId = 3;
+    repeated Option options = 4;
+}
+
+message Option {
+    string id = 1;
+    string content = 2;
+    map<string, string> metadata = 3;
+}
+
+message SelectionOption {
+    int32 id = 1;
+    string content = 2;
+    map<string, string> metadata = 3;
+}
+
+message CreateSelectionReply {
+    repeated SelectionOption selectionOptions = 1;
+}
+
+message ParseSelectionRequest {
+    string appId = 1;
+    string userId = 2;
+    string serverId = 3;
+    string content = 4;
+}
+
+message RankedOption {
+    string id = 1;
+    int32 rank = 2;
+}
+
+message ParseSelectionReply {
+    repeated RankedOption rankedOptions = 1;
+}

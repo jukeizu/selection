@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: golang:1.12
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - pkg-sum-{{ checksum "go.sum" }}
+      - run: make
+      - save_cache:
+          key: pkg-sum-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg"
+  docker-build:
+    docker:
+        - image: docker:stable-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: apk add --update make
+      - run: make docker-build
+
+workflows:
+  version: 2
+  test_build_docker:
+    jobs:
+      - test
+      - docker-build
