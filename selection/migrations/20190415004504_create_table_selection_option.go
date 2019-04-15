@@ -18,7 +18,6 @@ func (m CreateTableSelectionOption20190415004504) Up(tx *sql.Tx) error {
 			selectionOptionIndex INT NOT NULL,
 			optionId STRING NOT NULL DEFAULT '',
 			content STRING NOT NULL DEFAULT '',
-			metadata JSONB NOT NULL,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 			updated TIMESTAMPTZ,
 			PRIMARY KEY (selectionId, id),

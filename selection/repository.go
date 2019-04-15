@@ -50,6 +50,7 @@ func (r *repository) Migrate() error {
 	err = g.RegisterMigrations(
 		migrations.CreateTableSelection20190415004138{},
 		migrations.CreateTableSelectionOption20190415004504{},
+		migrations.CreateTableSelectionOptionMetadata20190415020132{},
 	)
 	if err != nil {
 		return err
@@ -61,8 +62,7 @@ func (r *repository) Migrate() error {
 func (r *repository) CreateSelection(selection Selection) error {
 	q := `INSERT INTO selection (appId, userId, serverId)
 		VALUES ($1, $2, $3)
-		RETURNING id
-		`
+		RETURNING id`
 
 	err := r.Db.QueryRow(q, selection.AppId, selection.UserId, selection.ServerId).Scan(
 		&selection.Id,
@@ -86,16 +86,44 @@ func (r *repository) createSelectionOption(selectionId string, selectionOption S
 			selectionId, 
 			selectionOptionIndex, 
 			optionId, 
-			content,
-			metadata)
-		VALUES ($1, $2, $3, $4, $5)`
+			content)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id`
 
-	_, err := r.Db.Exec(q,
+	err := r.Db.QueryRow(q,
 		selectionId,
 		selectionOption.SelectionOptionIndex,
 		selectionOption.Option.OptionId,
 		selectionOption.Option.Content,
-		selectionOption.Option.Metadata,
+	).Scan(&selectionOption.Id)
+
+	if err != nil {
+		return err
+	}
+
+	for k, v := range selectionOption.Option.Metadata {
+		err := r.createSelectionOptionMetadata(selectionId, selectionOption.Id, k, v)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *repository) createSelectionOptionMetadata(selectionId string, selectionOptionId string, key string, value string) error {
+	q := `INSERT INTO selection_option_metadata (
+			selectionId,
+			selectionOptionId,
+			key, 
+			value)
+		VALUES ($1, $2, $3, $4)`
+
+	_, err := r.Db.Exec(q,
+		selectionId,
+		selectionOptionId,
+		key,
+		value,
 	)
 
 	return err
