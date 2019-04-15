@@ -21,14 +21,24 @@ jobs:
       - setup_remote_docker
       - run: apk add --update make
       - run: make docker-build
+      - run: make docker-save
+      - persist_to_workspace:
+          root: .
+          paths: 
+           - bin/image.tar
+           - Makefile
+
   docker-deploy:
     docker:
         - image: docker:stable-git
     steps:
       - checkout
+      - attach_workspace:
+          at: /tmp/workspace
       - setup_remote_docker
       - run: apk add --update make
       - run: echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
+      - run: docker load -i /tmp/workspace/bin/image.tar
       - run: make docker-deploy
 
 
