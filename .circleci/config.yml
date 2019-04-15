@@ -39,10 +39,10 @@ workflows:
       - test
       - docker-build
       - docker-deploy:
-          requires:
-            - docker-build
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+        requires:
+          - docker-build
+        filters:
+          branches:
+            ignore: /.*/
+          tags:
+            only: /^v.*/
