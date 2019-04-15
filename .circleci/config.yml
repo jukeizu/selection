@@ -21,6 +21,15 @@ jobs:
       - setup_remote_docker
       - run: apk add --update make
       - run: make docker-build
+  docker-deploy:
+    docker:
+        - image: docker:stable
+    steps:
+      - setup_remote_docker
+      - run: apk add --update make
+      - run: echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
+      - run: make docker-deploy
+
 
 workflows:
   version: 2
@@ -28,3 +37,9 @@ workflows:
     jobs:
       - test
       - docker-build
+      - docker-deploy:
+          requires:
+            - docker-build
+          filters:
+            tags:
+              only: /^v.*/
