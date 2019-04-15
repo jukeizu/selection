@@ -42,7 +42,7 @@ workflows:
           requires:
             - docker-build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /^v.*/
+            branches:
+              ignore: /.*/
