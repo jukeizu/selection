@@ -30,8 +30,6 @@ type Selection struct {
 }
 
 type SelectionOption struct {
-	Id                   string
-	SelectionId          string
 	SelectionOptionIndex int
 	Option               Option
 }

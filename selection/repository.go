@@ -2,6 +2,7 @@ package selection
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/jukeizu/selection/selection/migrations"
@@ -48,10 +49,7 @@ func (r *repository) Migrate() error {
 	}
 
 	err = g.RegisterMigrations(
-		migrations.CreateTableSelection20190415004138{},
-		migrations.CreateTableSelectionOption20190415004504{},
-		migrations.CreateTableSelectionOptionMetadata20190415020132{},
-	)
+		migrations.CreateTableSelection20190415004138{})
 	if err != nil {
 		return err
 	}
@@ -60,71 +58,17 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) CreateSelection(selection Selection) error {
-	q := `INSERT INTO selection (appId, userId, serverId)
-		VALUES ($1, $2, $3)
-		RETURNING id`
-
-	err := r.Db.QueryRow(q, selection.AppId, selection.UserId, selection.ServerId).Scan(
-		&selection.Id,
-	)
-	if err != nil {
-		return err
-	}
-
-	for _, option := range selection.Options {
-		err := r.createSelectionOption(selection.Id, option)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r *repository) createSelectionOption(selectionId string, selectionOption SelectionOption) error {
-	q := `INSERT INTO selection_option (
-			selectionId, 
-			selectionOptionIndex, 
-			optionId, 
-			content)
+	q := `INSERT INTO selection (appId, userId, serverId, options)
 		VALUES ($1, $2, $3, $4)
-		RETURNING id`
+		ON CONFLICT (appId, userId, serverId)
+		DO UPDATE SET options = excluded.options, updated = now()`
 
-	err := r.Db.QueryRow(q,
-		selectionId,
-		selectionOption.SelectionOptionIndex,
-		selectionOption.Option.OptionId,
-		selectionOption.Option.Content,
-	).Scan(&selectionOption.Id)
-
+	options, err := json.Marshal(selection.Options)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not marshal options to JSON: %s", err)
 	}
 
-	for k, v := range selectionOption.Option.Metadata {
-		err := r.createSelectionOptionMetadata(selectionId, selectionOption.Id, k, v)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r *repository) createSelectionOptionMetadata(selectionId string, selectionOptionId string, key string, value string) error {
-	q := `INSERT INTO selection_option_metadata (
-			selectionId,
-			selectionOptionId,
-			key, 
-			value)
-		VALUES ($1, $2, $3, $4)`
-
-	_, err := r.Db.Exec(q,
-		selectionId,
-		selectionOptionId,
-		key,
-		value,
-	)
+	_, err = r.Db.Exec(q, selection.AppId, selection.UserId, selection.ServerId, options)
 
 	return err
 }

@@ -17,8 +17,10 @@ func (m CreateTableSelection20190415004138) Up(tx *sql.Tx) error {
 			appId STRING NOT NULL DEFAULT '',
 			userId STRING NOT NULL DEFAULT '',
 			serverId STRING NOT NULL DEFAULT '',
+			options JSONB NOT NULL,
 			created TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-			updated TIMESTAMPTZ
+			updated TIMESTAMPTZ,
+			UNIQUE (appId, userId, serverId)
 		)`)
 
 	return err
