@@ -38,8 +38,8 @@ message ParseSelectionRequest {
 }
 
 message RankedOption {
-    string optionId = 1;
-    int32 rank = 2;
+    int32 rank = 1;
+    Option option = 2;
 }
 
 message ParseSelectionReply {

@@ -12,9 +12,12 @@ import (
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/selection/internal/startup"
+	"github.com/jukeizu/selection/selection"
+	_ "github.com/lib/pq"
 	"github.com/oklog/run"
 	"github.com/rs/xid"
 	"github.com/rs/zerolog"
+	"github.com/shawntoffel/gossage"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
@@ -57,7 +60,7 @@ func main() {
 
 	logger := zerolog.New(os.Stdout).With().Timestamp().
 		Str("instance", xid.New().String()).
-		Str("component", "voting").
+		Str("component", "selection").
 		Str("version", Version).
 		Logger()
 
@@ -69,7 +72,23 @@ func main() {
 		flagHandler = true
 	}
 
+	repository, err := selection.NewRepository(dbAddress)
+	if err != nil {
+		logger.Error().Err(err).Caller().Msg("could not create selection repository")
+		os.Exit(1)
+	}
+
 	if flagMigrate {
+		gossage.Logger = func(format string, a ...interface{}) {
+			msg := fmt.Sprintf(format, a...)
+			logger.Info().Str("component", "migrator").Msg(msg)
+		}
+
+		err := repository.Migrate()
+		if err != nil {
+			logger.Error().Err(err).Caller().Msg("could not migrate selection repository")
+			os.Exit(1)
+		}
 	}
 
 	g := run.Group{}

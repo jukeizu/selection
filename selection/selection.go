@@ -37,6 +37,6 @@ type SelectionOption struct {
 }
 
 type RankedOption struct {
-	OptionId string
-	Rank     int
+	Rank   int
+	Option Option
 }

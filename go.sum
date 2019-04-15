@@ -13,6 +13,8 @@ github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5y
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c h1:BabrRUCK8Y4SkFBZEFZbEhJRzOd5lh6IP6bHZIYcIjs=
 github.com/jnewmano/grpc-json-proxy v0.0.0-20180914194908-38a7fdf2bd5c/go.mod h1:p90weUVX4yVbP76ZY9TzApwCCr8WZ5xwIxh8+JeFY0Y=
 github.com/jukeizu/voting v0.0.0-20190224054548-a0cb83c72180 h1:gSfPfgNiGvrOEdSCRKKJmiR4SkfC+2I+at7kxHRh9K8=
+github.com/lib/pq v1.0.0 h1:X5PMW56eZitiTeO7tKzZxFCSpbFZJtkMMooicw2us9A=
+github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/lyft/protoc-gen-validate v0.0.13/go.mod h1:XbGvPuh87YZc5TdIa2/I4pLk0QoUACkjt2znoq26NVQ=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
@@ -20,6 +22,8 @@ github.com/rs/xid v1.2.1 h1:mhH9Nq+C1fY2l1XIpgxIiUOfNpRBYH1kKcr+qfKgjRc=
 github.com/rs/xid v1.2.1/go.mod h1:+uKXf+4Djp6Md1KODXJxgGQPKngRmWyn10oCKFzNHOQ=
 github.com/rs/zerolog v1.13.0 h1:hSNcYHyxDWycfePW7pUI8swuFkcSMPKh3E63Pokg1Hk=
 github.com/rs/zerolog v1.13.0/go.mod h1:YbFCdg8HfsridGWAh22vktObvhZbQsZXe4/zB0OKkWU=
+github.com/shawntoffel/gossage v0.0.1 h1:lpJC13aM9Pmu318o6lFHNQOLv38r0xeCcbHetAfkSO4=
+github.com/shawntoffel/gossage v0.0.1/go.mod h1:QYyUEdhSBU5uJcyk4RDLbExDoeCzOOO3IpugfCTfuqI=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/lint v0.0.0-20190313153728-d0100b6bd8b3/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
 golang.org/x/net v0.0.0-20180826012351-8a410e7b638d/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=

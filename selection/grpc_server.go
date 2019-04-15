@@ -85,13 +85,13 @@ func parseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSel
 	return p
 }
 
-func dtoToParseSelectionReply(rankedOptions []RankedOption) *selectionpb.ParseSelectionReply {
+func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.ParseSelectionReply {
 	reply := &selectionpb.ParseSelectionReply{}
 
-	for _, option := range rankedOptions {
+	for _, dtoRankedOption := range dtoRankedOptions {
 		rankedOption := &selectionpb.RankedOption{
-			OptionId: option.OptionId,
-			Rank:     int32(option.Rank),
+			Rank:   int32(dtoRankedOption.Rank),
+			Option: dtoToOption(dtoRankedOption.Option),
 		}
 
 		reply.RankedOptions = append(reply.RankedOptions, rankedOption)
