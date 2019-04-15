@@ -26,7 +26,7 @@ message CreateSelectionReply {
 }
 
 message SelectionOption {
-    int32 selectionOptionIndex = 1;
+    int32 index = 1;
     Option option = 2;
 }
 

@@ -30,8 +30,8 @@ type Selection struct {
 }
 
 type SelectionOption struct {
-	SelectionOptionIndex int
-	Option               Option
+	Index  int
+	Option Option
 }
 
 type RankedOption struct {

@@ -35,8 +35,8 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 
 	for i, option := range req.Options {
 		selectionOption := SelectionOption{
-			SelectionOptionIndex: i + 1,
-			Option:               option,
+			Index:  i + 1,
+			Option: option,
 		}
 
 		selection.Options = append(selection.Options, selectionOption)

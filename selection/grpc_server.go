@@ -58,8 +58,8 @@ func dtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelection
 
 	for _, dtoSelectionOption := range selection.Options {
 		selectionOption := &selectionpb.SelectionOption{
-			SelectionOptionIndex: int32(dtoSelectionOption.SelectionOptionIndex),
-			Option:               dtoToOption(dtoSelectionOption.Option),
+			Index:  int32(dtoSelectionOption.Index),
+			Option: dtoToOption(dtoSelectionOption.Option),
 		}
 
 		reply.SelectionOptions = append(reply.SelectionOptions, selectionOption)
