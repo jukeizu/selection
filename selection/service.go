@@ -42,7 +42,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		selection.Options = append(selection.Options, selectionOption)
 	}
 
-	err := s.repository.Create(selection)
+	err := s.repository.CreateSelection(selection)
 	if err != nil {
 		return Selection{}, err
 	}

@@ -14,7 +14,7 @@ const (
 
 type Repository interface {
 	Migrate() error
-	Create(Selection) error
+	CreateSelection(Selection) error
 }
 
 type repository struct {
@@ -58,6 +58,45 @@ func (r *repository) Migrate() error {
 	return g.Up()
 }
 
-func (r *repository) Create(selection Selection) error {
+func (r *repository) CreateSelection(selection Selection) error {
+	q := `INSERT INTO selection (appId, userId, serverId)
+		VALUES ($1, $2, $3)
+		RETURNING id
+		`
+
+	err := r.Db.QueryRow(q, selection.AppId, selection.UserId, selection.ServerId).Scan(
+		&selection.Id,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, option := range selection.Options {
+		err := r.createSelectionOption(selection.Id, option)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func (r *repository) createSelectionOption(selectionId string, selectionOption SelectionOption) error {
+	q := `INSERT INTO selection_option (
+			selectionId, 
+			selectionOptionIndex, 
+			optionId, 
+			content,
+			metadata)
+		VALUES ($1, $2, $3, $4, $5)`
+
+	_, err := r.Db.Exec(q,
+		selectionId,
+		selectionOption.SelectionOptionIndex,
+		selectionOption.Option.OptionId,
+		selectionOption.Option.Content,
+		selectionOption.Option.Metadata,
+	)
+
+	return err
 }
