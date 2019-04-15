@@ -26,7 +26,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		AppId:    req.AppId,
 		UserId:   req.UserId,
 		ServerId: req.ServerId,
-		Options:  []SelectionOption{},
+		Options:  map[int]Option{},
 	}
 
 	if req.Randomize {
@@ -34,12 +34,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 	}
 
 	for i, option := range req.Options {
-		selectionOption := SelectionOption{
-			Index:  i + 1,
-			Option: option,
-		}
-
-		selection.Options = append(selection.Options, selectionOption)
+		selection.Options[i] = option
 	}
 
 	err := s.repository.CreateSelection(selection)
@@ -51,12 +46,13 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 }
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
+
 	return []RankedOption{}, nil
 }
 
 func shuffleOptions(options []Option) []Option {
-	s := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(s)
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
 
 	for i := range options {
 		j := r.Intn(i + 1)

@@ -16,6 +16,7 @@ const (
 type Repository interface {
 	Migrate() error
 	CreateSelection(Selection) error
+	Selection(appId, userId, serverId string) (Selection, error)
 }
 
 type repository struct {
@@ -71,4 +72,11 @@ func (r *repository) CreateSelection(selection Selection) error {
 	_, err = r.Db.Exec(q, selection.AppId, selection.UserId, selection.ServerId, options)
 
 	return err
+}
+
+func (r *repository) Selection(appId, userId, serverId string) (Selection, error) {
+	//	q := `SELECT ()`
+
+	return Selection{}, nil
+
 }

@@ -26,12 +26,7 @@ type Selection struct {
 	AppId    string
 	UserId   string
 	ServerId string
-	Options  []SelectionOption
-}
-
-type SelectionOption struct {
-	Index  int
-	Option Option
+	Options  map[int]Option
 }
 
 type RankedOption struct {

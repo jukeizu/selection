@@ -22,12 +22,7 @@ message Option {
 }
 
 message CreateSelectionReply {
-    repeated SelectionOption selectionOptions = 1;
-}
-
-message SelectionOption {
-    int32 index = 1;
-    Option option = 2;
+    map<int32, Option> options = 3;
 }
 
 message ParseSelectionRequest {
