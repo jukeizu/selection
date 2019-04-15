@@ -1,6 +1,10 @@
 package selection
 
-import "github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
+import (
+	"context"
+
+	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
+)
 
 type GrpcServer struct {
 	service Service
@@ -10,7 +14,7 @@ func NewGrpcServer(service Service) GrpcServer {
 	return GrpcServer{service}
 }
 
-func (s GrpcServer) CreateSelection(req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionReply, error) {
+func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionReply, error) {
 	selection, err := s.service.Create(createSelectionRequestToDto(req))
 	if err != nil {
 		return nil, err
@@ -19,7 +23,7 @@ func (s GrpcServer) CreateSelection(req *selectionpb.CreateSelectionRequest) (*s
 	return dtoToCreateSelectionReply(selection), nil
 }
 
-func (s GrpcServer) ParseSelection(req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionReply, error) {
+func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionReply, error) {
 	rankedOptions, err := s.service.Parse(parseSelectionRequestToDto(req))
 	if err != nil {
 		return nil, err

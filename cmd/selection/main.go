@@ -11,6 +11,7 @@ import (
 
 	"github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
+	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
 	"github.com/jukeizu/selection/internal/startup"
 	"github.com/jukeizu/selection/selection"
 	_ "github.com/lib/pq"
@@ -94,6 +95,20 @@ func main() {
 	g := run.Group{}
 
 	if flagServer {
+		grpcServer := newGrpcServer(logger)
+		server := startup.NewServer(logger, grpcServer)
+
+		selectionService := selection.NewDefaultService(logger, repository)
+		selectionServer := selection.NewGrpcServer(selectionService)
+		selectionpb.RegisterSelectionServer(grpcServer, selectionServer)
+
+		grpcAddr := ":" + grpcPort
+
+		g.Add(func() error {
+			return server.Start(grpcAddr)
+		}, func(error) {
+			server.Stop()
+		})
 	}
 
 	cancel := make(chan struct{})
