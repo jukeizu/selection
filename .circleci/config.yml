@@ -25,6 +25,7 @@ jobs:
     docker:
         - image: docker:stable
     steps:
+      - checkout
       - setup_remote_docker
       - run: apk add --update make
       - run: echo "$DOCKER_PASS" | docker login -u="$DOCKER_USER" --password-stdin
@@ -41,5 +42,7 @@ workflows:
           requires:
             - docker-build
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
