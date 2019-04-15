@@ -46,6 +46,7 @@ workflows:
               only: /.*/
       - docker-deploy:
           requires:
+            - test
             - docker-build
           filters:
             tags:
