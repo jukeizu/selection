@@ -26,7 +26,6 @@ jobs:
           root: .
           paths: 
            - bin/image.tar
-           - Makefile
 
   docker-deploy:
     docker:
