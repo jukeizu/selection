@@ -68,7 +68,7 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 
 		option, ok := selection.Options[c]
 		if !ok {
-			return nil, fmt.Errorf("Could not find option for id: %d", c)
+			return nil, fmt.Errorf("could not find option for id: %d", c)
 		}
 
 		rankedOption := RankedOption{

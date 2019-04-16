@@ -66,7 +66,7 @@ func (r *repository) CreateSelection(selection Selection) error {
 
 	options, err := json.Marshal(selection.Options)
 	if err != nil {
-		return fmt.Errorf("Could not marshal options to JSON: %s", err)
+		return fmt.Errorf("could not marshal options to JSON: %s", err)
 	}
 
 	_, err = r.Db.Exec(q, selection.AppId, selection.UserId, selection.ServerId, options)
@@ -94,7 +94,7 @@ func (r *repository) Selection(appId, userId, serverId string) (Selection, error
 
 	err = json.Unmarshal(jsonOptions, &selection.Options)
 	if err != nil {
-		return Selection{}, err
+		return Selection{}, fmt.Errorf("could not unmarshal JSON to options: %s", err)
 	}
 
 	return selection, nil
