@@ -16,7 +16,7 @@ const (
 type Repository interface {
 	Migrate() error
 	CreateSelection(Selection) error
-	Selection(appId, userId, serverId string) (Selection, error)
+	Selection(appId, instanceId, userId, serverId string) (Selection, error)
 }
 
 type repository struct {
@@ -59,31 +59,32 @@ func (r *repository) Migrate() error {
 }
 
 func (r *repository) CreateSelection(selection Selection) error {
-	q := `INSERT INTO selection (appId, userId, serverId, options)
-		VALUES ($1, $2, $3, $4)
+	q := `INSERT INTO selection (appId, instanceId, userId, serverId, options)
+		VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (appId, userId, serverId)
-		DO UPDATE SET options = excluded.options, updated = now()`
+		DO UPDATE SET instanceId = excluded.instanceId, options = excluded.options, updated = now()`
 
 	options, err := json.Marshal(selection.Options)
 	if err != nil {
 		return fmt.Errorf("could not marshal options to JSON: %s", err)
 	}
 
-	_, err = r.Db.Exec(q, selection.AppId, selection.UserId, selection.ServerId, options)
+	_, err = r.Db.Exec(q, selection.AppId, selection.InstanceId, selection.UserId, selection.ServerId, options)
 
 	return err
 }
 
-func (r *repository) Selection(appId, userId, serverId string) (Selection, error) {
-	q := `SELECT appId, userId, serverId, options FROM selection
-	WHERE appId = $1 AND userId = $2 AND serverId = $3`
+func (r *repository) Selection(appId, instanceId, userId, serverId string) (Selection, error) {
+	q := `SELECT appId, instanceId, userId, serverId, options FROM selection
+	WHERE appId = $1 AND instanceId = $2 AND userId = $3 AND serverId = $4`
 
 	selection := Selection{}
 
 	jsonOptions := []byte{}
 
-	err := r.Db.QueryRow(q, appId, userId, serverId).Scan(
+	err := r.Db.QueryRow(q, appId, instanceId, userId, serverId).Scan(
 		&selection.AppId,
+		&selection.InstanceId,
 		&selection.UserId,
 		&selection.ServerId,
 		&jsonOptions,

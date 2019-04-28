@@ -34,10 +34,11 @@ func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSe
 
 func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) CreateSelectionRequest {
 	c := CreateSelectionRequest{
-		AppId:     req.AppId,
-		UserId:    req.UserId,
-		ServerId:  req.ServerId,
-		Randomize: req.Randomize,
+		AppId:      req.AppId,
+		InstanceId: req.InstanceId,
+		UserId:     req.UserId,
+		ServerId:   req.ServerId,
+		Randomize:  req.Randomize,
 	}
 
 	for _, reqOption := range req.Options {
@@ -77,10 +78,11 @@ func dtoToOption(dtoOption Option) *selectionpb.Option {
 
 func parseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSelectionRequest {
 	p := ParseSelectionRequest{
-		AppId:    req.AppId,
-		UserId:   req.UserId,
-		ServerId: req.ServerId,
-		Content:  req.Content,
+		AppId:      req.AppId,
+		InstanceId: req.InstanceId,
+		UserId:     req.UserId,
+		ServerId:   req.ServerId,
+		Content:    req.Content,
 	}
 
 	return p

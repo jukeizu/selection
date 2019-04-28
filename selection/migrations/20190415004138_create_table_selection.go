@@ -15,6 +15,7 @@ func (m CreateTableSelection20190415004138) Up(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS selection (
 			id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
 			appId STRING NOT NULL DEFAULT '',
+			instanceId STRING NOT NULL DEFAULT '',
 			userId STRING NOT NULL DEFAULT '',
 			serverId STRING NOT NULL DEFAULT '',
 			options JSONB NOT NULL,

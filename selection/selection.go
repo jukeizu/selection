@@ -1,11 +1,12 @@
 package selection
 
 type CreateSelectionRequest struct {
-	AppId     string
-	UserId    string
-	ServerId  string
-	Randomize bool
-	Options   []Option
+	AppId      string
+	InstanceId string
+	UserId     string
+	ServerId   string
+	Randomize  bool
+	Options    []Option
 }
 
 type Option struct {
@@ -15,18 +16,20 @@ type Option struct {
 }
 
 type ParseSelectionRequest struct {
-	AppId    string
-	UserId   string
-	ServerId string
-	Content  string
+	AppId      string
+	InstanceId string
+	UserId     string
+	ServerId   string
+	Content    string
 }
 
 type Selection struct {
-	Id       string
-	AppId    string
-	UserId   string
-	ServerId string
-	Options  map[int]Option
+	Id         string
+	AppId      string
+	InstanceId string
+	UserId     string
+	ServerId   string
+	Options    map[int]Option
 }
 
 type RankedOption struct {

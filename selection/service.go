@@ -1,6 +1,7 @@
 package selection
 
 import (
+	"database/sql"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -27,11 +28,20 @@ func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
 }
 
 func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
-	selection := Selection{
-		AppId:    req.AppId,
-		UserId:   req.UserId,
-		ServerId: req.ServerId,
-		Options:  map[int]Option{},
+	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
+	if err == nil {
+		return selection, nil
+	}
+	if err != nil && err != sql.ErrNoRows {
+		return Selection{}, err
+	}
+
+	selection = Selection{
+		AppId:      req.AppId,
+		InstanceId: req.InstanceId,
+		UserId:     req.UserId,
+		ServerId:   req.ServerId,
+		Options:    map[int]Option{},
 	}
 
 	if req.Randomize {
@@ -42,7 +52,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		selection.Options[i+1] = option
 	}
 
-	err := s.repository.CreateSelection(selection)
+	err = s.repository.CreateSelection(selection)
 	if err != nil {
 		return Selection{}, err
 	}
@@ -51,7 +61,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 }
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
-	selection, err := s.repository.Selection(req.AppId, req.UserId, req.ServerId)
+	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
 	if err != nil {
 		return nil, err
 	}

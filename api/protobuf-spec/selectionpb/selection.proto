@@ -9,10 +9,11 @@ service Selection {
 
 message CreateSelectionRequest {
     string appId = 1;
-    string userId = 2;
-    string serverId = 3;
-    bool randomize = 4;
-    repeated Option options = 5;
+    string instanceId = 2;
+    string userId = 3;
+    string serverId = 4;
+    bool randomize = 5;
+    repeated Option options = 6;
 }
 
 message Option {
@@ -27,9 +28,10 @@ message CreateSelectionReply {
 
 message ParseSelectionRequest {
     string appId = 1;
-    string userId = 2;
-    string serverId = 3;
-    string content = 4;
+    string instanceId = 2;
+    string userId = 3;
+    string serverId = 4;
+    string content = 5;
 }
 
 message RankedOption {
