@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type GrpcServer struct {
@@ -17,7 +19,7 @@ func NewGrpcServer(service Service) GrpcServer {
 func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionReply, error) {
 	selection, err := s.service.Create(createSelectionRequestToDto(req))
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return dtoToCreateSelectionReply(selection), nil
@@ -26,7 +28,7 @@ func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.Create
 func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionReply, error) {
 	rankedOptions, err := s.service.Parse(parseSelectionRequestToDto(req))
 	if err != nil {
-		return nil, err
+		return nil, toStatusErr(err)
 	}
 
 	return dtoToParseSelectionReply(rankedOptions), nil
@@ -101,4 +103,12 @@ func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.Pars
 	}
 
 	return reply
+}
+
+func toStatusErr(err error) error {
+	switch err.(type) {
+	case ValidationError:
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+	return err
 }

@@ -2,7 +2,6 @@ package selection
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -73,12 +72,12 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 	for i, choice := range choices {
 		c, err := strconv.Atoi(choice)
 		if err != nil {
-			return nil, fmt.Errorf("%s is not a valid integer. %s", choice, err)
+			return nil, NewValidationError("%s is not a valid integer. %s", choice, err)
 		}
 
 		option, ok := selection.Options[c]
 		if !ok {
-			return nil, fmt.Errorf("could not find option for id: %d", c)
+			return nil, NewValidationError("could not find option for id: %d", c)
 		}
 
 		rankedOption := RankedOption{
