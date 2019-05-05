@@ -29,24 +29,20 @@ var Version = ""
 var (
 	flagMigrate = false
 	flagVersion = false
-	flagServer  = false
-	flagHandler = false
+	flagServer  = true
 
 	grpcPort       = "50052"
-	httpPort       = "10002"
 	dbAddress      = "root@localhost:26257"
 	serviceAddress = "localhost:" + grpcPort
 )
 
 func parseConfig() {
 	flag.StringVar(&grpcPort, "grpc.port", grpcPort, "grpc port for server")
-	flag.StringVar(&httpPort, "http.port", httpPort, "http port for handler")
 	flag.StringVar(&dbAddress, "db", dbAddress, "Database connection address")
 	flag.StringVar(&serviceAddress, "service.addr", serviceAddress, "address of service if not local")
-	flag.BoolVar(&flagServer, "server", false, "Run as server")
-	flag.BoolVar(&flagHandler, "handler", false, "Run as handler")
-	flag.BoolVar(&flagMigrate, "migrate", false, "Run db migrations")
-	flag.BoolVar(&flagVersion, "v", false, "version")
+	flag.BoolVar(&flagServer, "server", flagServer, "Run as server")
+	flag.BoolVar(&flagMigrate, "migrate", flagMigrate, "Run db migrations")
+	flag.BoolVar(&flagVersion, "v", flagVersion, "version")
 
 	flag.Parse()
 }
@@ -67,11 +63,6 @@ func main() {
 
 	grpcLoggerV2 := grpczerolog.New(logger.With().Str("transport", "grpc").Logger())
 	grpclog.SetLoggerV2(grpcLoggerV2)
-
-	if !flagServer && !flagHandler {
-		flagServer = true
-		flagHandler = true
-	}
 
 	repository, err := selection.NewRepository(dbAddress)
 	if err != nil {
