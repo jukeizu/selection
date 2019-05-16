@@ -12,15 +12,15 @@ message CreateSelectionRequest {
     string instanceId = 2;
     string userId = 3;
     string serverId = 4;
-    bool randomize = 5;
-    int32 batchSize = 6;
-    BatchSortMethod batchSortMethod = 7;
-    repeated Option options = 8;
+    int32 batchSize = 5;
+    SortMethod sortMethod = 6;
+    repeated Option options = 7;
 }
 
-enum BatchSortMethod {
-    NUMBER = 0;
-    ALPHABETICAL = 1;
+enum SortMethod {
+    NONE = 0;
+    RANDOM = 1;
+    ALPHABETICAL = 2;
 }
 
 message Option {
@@ -30,8 +30,8 @@ message Option {
 }
 
 message Batch {
-    string start = 1;
-    string end = 2;
+    int32 start = 1;
+    int32 end = 2;
     map<int32, Option> options = 3;
 }
 

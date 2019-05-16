@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"math/rand"
 	"regexp"
+	"sort"
 	"strconv"
 	"time"
 
@@ -43,17 +44,9 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		Batches:    []Batch{},
 	}
 
-	if req.Randomize {
-		req.Options = shuffleOptions(req.Options)
-	}
+	sortedOptions := s.sortOptions(req.Options, req.SortMethod)
 
-	batch := Batch{}
-
-	for i, option := range req.Options {
-		batch.Options[i+1] = option
-	}
-
-	selection.Batches = append(selection.Batches, batch)
+	selection.Batches = s.buildBatches(sortedOptions, req.BatchSize)
 
 	err = s.repository.CreateSelection(selection)
 	if err != nil {
@@ -102,7 +95,19 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 	return rankedOptions, nil
 }
 
-func shuffleOptions(options []Option) []Option {
+func (s DefaultService) sortOptions(options []Option, method SortMethod) []Option {
+	switch method {
+	case Random:
+		return s.shuffleOptions(options)
+	case Alphabetical:
+		sort.Sort(ByAlphabetical(options))
+		return options
+	}
+
+	return options
+}
+
+func (s DefaultService) shuffleOptions(options []Option) []Option {
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
 
@@ -112,4 +117,38 @@ func shuffleOptions(options []Option) []Option {
 	}
 
 	return options
+}
+
+func (s DefaultService) buildBatches(options []Option, batchSize int) []Batch {
+	numOptions := len(options)
+
+	if batchSize == 0 {
+		batchSize = numOptions
+	}
+
+	batches := []Batch{}
+
+	for i := 0; i < numOptions; i += batchSize {
+		nextBound := i + batchSize
+
+		if nextBound > numOptions {
+			nextBound = numOptions
+		}
+
+		batchOptions := options[i:nextBound]
+
+		batch := Batch{
+			Start:   i + 1,
+			End:     nextBound,
+			Options: map[int]Option{},
+		}
+
+		for j, option := range batchOptions {
+			batch.Options[i+j+1] = option
+		}
+
+		batches = append(batches, batch)
+	}
+
+	return batches
 }
