@@ -37,7 +37,7 @@ type Selection struct {
 type BatchSortMethod int
 
 const (
-	Integer BatchSortMethod = iota
+	Number BatchSortMethod = iota
 	Alphabetical
 )
 
