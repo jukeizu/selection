@@ -64,7 +64,7 @@ func (r *repository) CreateSelection(selection Selection) error {
 		ON CONFLICT (appId, userId, serverId)
 		DO UPDATE SET instanceId = excluded.instanceId, options = excluded.options, updated = now()`
 
-	options, err := json.Marshal(selection.Options)
+	options, err := json.Marshal(selection.Batches)
 	if err != nil {
 		return fmt.Errorf("could not marshal options to JSON: %s", err)
 	}
@@ -93,7 +93,7 @@ func (r *repository) Selection(appId, instanceId, userId, serverId string) (Sele
 		return Selection{}, err
 	}
 
-	err = json.Unmarshal(jsonOptions, &selection.Options)
+	err = json.Unmarshal(jsonOptions, &selection.Batches)
 	if err != nil {
 		return Selection{}, fmt.Errorf("could not unmarshal JSON to options: %s", err)
 	}

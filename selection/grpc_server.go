@@ -58,11 +58,17 @@ func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 
 func dtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelectionReply {
 	reply := &selectionpb.CreateSelectionReply{
-		Options: map[int32]*selectionpb.Option{},
+		Batches: []*selectionpb.Batch{},
 	}
 
-	for i, dtoOption := range selection.Options {
-		reply.Options[int32(i)] = dtoToOption(dtoOption)
+	for _, dtoBatch := range selection.Batches {
+		replyBatch := &selectionpb.Batch{
+			Start: string(dtoBatch.Start),
+			End:   string(dtoBatch.End),
+		}
+		for i, dtoOption := range dtoBatch.Options {
+			replyBatch.Options[int32(i)] = dtoToOption(dtoOption)
+		}
 	}
 
 	return reply

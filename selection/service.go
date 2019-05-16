@@ -40,16 +40,20 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		InstanceId: req.InstanceId,
 		UserId:     req.UserId,
 		ServerId:   req.ServerId,
-		Options:    map[int]Option{},
+		Batches:    []Batch{},
 	}
 
 	if req.Randomize {
 		req.Options = shuffleOptions(req.Options)
 	}
 
+	batch := Batch{}
+
 	for i, option := range req.Options {
-		selection.Options[i+1] = option
+		batch.Options[i+1] = option
 	}
+
+	selection.Batches = append(selection.Batches, batch)
 
 	err = s.repository.CreateSelection(selection)
 	if err != nil {
@@ -65,6 +69,13 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 		return nil, err
 	}
 
+	options := map[int]Option{}
+	for _, batch := range selection.Batches {
+		for k, option := range batch.Options {
+			options[k] = option
+		}
+	}
+
 	choices := s.regex.FindAllString(req.Content, -1)
 
 	rankedOptions := []RankedOption{}
@@ -75,7 +86,7 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 			return nil, NewValidationError("%s is not a valid integer. %s", choice, err)
 		}
 
-		option, ok := selection.Options[c]
+		option, ok := options[c]
 		if !ok {
 			return nil, NewValidationError("could not find option for id: %d", c)
 		}

@@ -1,12 +1,14 @@
 package selection
 
 type CreateSelectionRequest struct {
-	AppId      string
-	InstanceId string
-	UserId     string
-	ServerId   string
-	Randomize  bool
-	Options    []Option
+	AppId           string
+	InstanceId      string
+	UserId          string
+	ServerId        string
+	Randomize       bool
+	BatchSize       int
+	BatchSortMethod BatchSortMethod
+	Options         []Option
 }
 
 type Option struct {
@@ -29,7 +31,20 @@ type Selection struct {
 	InstanceId string
 	UserId     string
 	ServerId   string
-	Options    map[int]Option
+	Batches    []Batch
+}
+
+type BatchSortMethod int
+
+const (
+	Integer BatchSortMethod = iota
+	Alphabetical
+)
+
+type Batch struct {
+	Start   rune
+	End     rune
+	Options map[int]Option
 }
 
 type RankedOption struct {
