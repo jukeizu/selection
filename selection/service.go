@@ -2,8 +2,10 @@ package selection
 
 import (
 	"database/sql"
+	"math/rand"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/rs/zerolog"
 )
@@ -40,6 +42,10 @@ func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, erro
 		UserId:     req.UserId,
 		ServerId:   req.ServerId,
 		Options:    map[int]Option{},
+	}
+
+	if req.Randomize {
+		req.Options = s.shuffleOptions(req.Options)
 	}
 
 	for i, option := range req.Options {
@@ -116,4 +122,16 @@ func (s DefaultService) createBatchOptions(req CreateSelectionRequest, selection
 	}
 
 	return batchOptions
+}
+
+func (s DefaultService) shuffleOptions(options []Option) []Option {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
+	for i := range options {
+		j := r.Intn(i + 1)
+		options[i], options[j] = options[j], options[i]
+	}
+
+	return options
 }

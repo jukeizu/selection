@@ -9,6 +9,7 @@ type CreateSelectionRequest struct {
 	InstanceId string
 	UserId     string
 	ServerId   string
+	Randomize  bool
 	BatchSize  int
 	SortMethod SortMethod
 	SortKey    string

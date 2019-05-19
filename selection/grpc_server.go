@@ -40,6 +40,7 @@ func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 		InstanceId: req.InstanceId,
 		UserId:     req.UserId,
 		ServerId:   req.ServerId,
+		Randomize:  req.Randomize,
 		BatchSize:  int(req.BatchSize),
 		SortMethod: SortMethod(req.SortMethod),
 		SortKey:    req.SortKey,

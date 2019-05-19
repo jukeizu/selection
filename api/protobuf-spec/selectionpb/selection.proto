@@ -12,10 +12,11 @@ message CreateSelectionRequest {
     string instanceId = 2;
     string userId = 3;
     string serverId = 4;
-    int32 batchSize = 5;
-    string sortMethod = 6;
-    string sortKey = 7;
-    repeated Option options = 8;
+    bool randomize = 5;
+    int32 batchSize = 6;
+    string sortMethod = 7;
+    string sortKey = 8;
+    repeated Option options = 9;
 }
 
 message Option {
