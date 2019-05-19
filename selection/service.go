@@ -2,37 +2,36 @@ package selection
 
 import (
 	"database/sql"
-	"math/rand"
 	"regexp"
 	"strconv"
-	"time"
 
 	"github.com/rs/zerolog"
 )
 
-type Service interface {
-	Create(CreateSelectionRequest) (Selection, error)
-	Parse(ParseSelectionRequest) ([]RankedOption, error)
-}
-
 type DefaultService struct {
 	logger     zerolog.Logger
 	repository Repository
+	sorter     Sorter
+	batcher    Batcher
 	regex      *regexp.Regexp
 }
 
-func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
+func NewDefaultService(logger zerolog.Logger, repository Repository, sorter Sorter, batcher Batcher) Service {
 	regex := regexp.MustCompile("[0-9]+")
-	return &DefaultService{logger, repository, regex}
+	return &DefaultService{logger, repository, sorter, batcher, regex}
 }
 
-func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
+func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, error) {
 	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
 	if err == nil {
-		return selection, nil
+		s.logger.Info().
+			EmbedObject(selection).
+			Msg("found existing selection")
+
+		return s.createSelectionReply(req, selection), nil
 	}
 	if err != nil && err != sql.ErrNoRows {
-		return Selection{}, err
+		return SelectionReply{}, err
 	}
 
 	selection = Selection{
@@ -43,20 +42,20 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		Options:    map[int]Option{},
 	}
 
-	if req.Randomize {
-		req.Options = shuffleOptions(req.Options)
-	}
-
 	for i, option := range req.Options {
 		selection.Options[i+1] = option
 	}
 
 	err = s.repository.CreateSelection(selection)
 	if err != nil {
-		return Selection{}, err
+		return SelectionReply{}, err
 	}
 
-	return selection, nil
+	s.logger.Info().
+		EmbedObject(selection).
+		Msg("created selection")
+
+	return s.createSelectionReply(req, selection), nil
 }
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
@@ -91,14 +90,30 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 	return rankedOptions, nil
 }
 
-func shuffleOptions(options []Option) []Option {
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
+func (s DefaultService) createSelectionReply(req CreateSelectionRequest, selection Selection) SelectionReply {
+	batchOptions := s.createBatchOptions(req, selection)
 
-	for i := range options {
-		j := r.Intn(i + 1)
-		options[i], options[j] = options[j], options[i]
+	sortedBatchOptions := s.sorter.Sort(batchOptions, req.SortMethod, req.SortKey)
+
+	selectionReply := SelectionReply{
+		Selection: selection,
+		Batches:   s.batcher.CreateBatches(sortedBatchOptions, req.BatchSize),
 	}
 
-	return options
+	return selectionReply
+}
+
+func (s DefaultService) createBatchOptions(req CreateSelectionRequest, selection Selection) []BatchOption {
+	batchOptions := BatchOptions{}
+
+	for k, option := range selection.Options {
+		batchOption := BatchOption{
+			Number: k,
+			Option: option,
+		}
+
+		batchOptions = append(batchOptions, batchOption)
+	}
+
+	return batchOptions
 }

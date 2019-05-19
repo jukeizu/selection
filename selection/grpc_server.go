@@ -40,7 +40,9 @@ func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 		InstanceId: req.InstanceId,
 		UserId:     req.UserId,
 		ServerId:   req.ServerId,
-		Randomize:  req.Randomize,
+		BatchSize:  int(req.BatchSize),
+		SortMethod: SortMethod(req.SortMethod),
+		SortKey:    req.SortKey,
 	}
 
 	for _, reqOption := range req.Options {
@@ -56,13 +58,26 @@ func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 	return c
 }
 
-func dtoToCreateSelectionReply(selection Selection) *selectionpb.CreateSelectionReply {
+func dtoToCreateSelectionReply(selectionReply SelectionReply) *selectionpb.CreateSelectionReply {
 	reply := &selectionpb.CreateSelectionReply{
-		Options: map[int32]*selectionpb.Option{},
+		Batches: []*selectionpb.Batch{},
 	}
 
-	for i, dtoOption := range selection.Options {
-		reply.Options[int32(i)] = dtoToOption(dtoOption)
+	for _, dtoBatch := range selectionReply.Batches {
+		replyBatch := &selectionpb.Batch{
+			Options: []*selectionpb.BatchOption{},
+		}
+
+		for _, dtoBatchOption := range dtoBatch.Options {
+			replyBatchOption := &selectionpb.BatchOption{
+				Number: int32(dtoBatchOption.Number),
+				Option: dtoToOption(dtoBatchOption.Option),
+			}
+
+			replyBatch.Options = append(replyBatch.Options, replyBatchOption)
+		}
+
+		reply.Batches = append(reply.Batches, replyBatch)
 	}
 
 	return reply

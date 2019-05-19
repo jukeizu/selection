@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cheapRoc/grpc-zerolog"
+	grpczerolog "github.com/cheapRoc/grpc-zerolog"
 	_ "github.com/jnewmano/grpc-json-proxy/codec"
 	"github.com/jukeizu/selection/api/protobuf-spec/selectionpb"
 	"github.com/jukeizu/selection/internal/startup"
@@ -89,7 +89,10 @@ func main() {
 		grpcServer := newGrpcServer(logger)
 		server := startup.NewServer(logger, grpcServer)
 
-		selectionService := selection.NewDefaultService(logger, repository)
+		sorter := selection.NewSorter(logger)
+		batcher := selection.NewBatcher(logger)
+
+		selectionService := selection.NewDefaultService(logger, repository, sorter, batcher)
 		selectionServer := selection.NewGrpcServer(selectionService)
 		selectionpb.RegisterSelectionServer(grpcServer, selectionServer)
 

@@ -75,7 +75,7 @@ func (r *repository) CreateSelection(selection Selection) error {
 }
 
 func (r *repository) Selection(appId, instanceId, userId, serverId string) (Selection, error) {
-	q := `SELECT appId, instanceId, userId, serverId, options FROM selection
+	q := `SELECT id, appId, instanceId, userId, serverId, options FROM selection
 	WHERE appId = $1 AND instanceId = $2 AND userId = $3 AND serverId = $4`
 
 	selection := Selection{}
@@ -83,6 +83,7 @@ func (r *repository) Selection(appId, instanceId, userId, serverId string) (Sele
 	jsonOptions := []byte{}
 
 	err := r.Db.QueryRow(q, appId, instanceId, userId, serverId).Scan(
+		&selection.Id,
 		&selection.AppId,
 		&selection.InstanceId,
 		&selection.UserId,
