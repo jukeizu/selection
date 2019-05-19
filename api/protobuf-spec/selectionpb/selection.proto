@@ -13,14 +13,9 @@ message CreateSelectionRequest {
     string userId = 3;
     string serverId = 4;
     int32 batchSize = 5;
-    SortMethod sortMethod = 6;
-    repeated Option options = 7;
-}
-
-enum SortMethod {
-    NONE = 0;
-    RANDOM = 1;
-    ALPHABETICAL = 2;
+    string sortMethod = 6;
+    string sortKey = 7;
+    repeated Option options = 8;
 }
 
 message Option {
@@ -29,14 +24,17 @@ message Option {
     map<string, string> metadata = 3;
 }
 
-message Batch {
-    int32 start = 1;
-    int32 end = 2;
-    map<int32, Option> options = 3;
-}
-
 message CreateSelectionReply {
     repeated Batch batches = 1;
+}
+
+message Batch {
+    repeated BatchOption options = 1;
+}
+
+message BatchOption {
+    int32 number = 1;
+    Option option = 2;
 }
 
 message ParseSelectionRequest {

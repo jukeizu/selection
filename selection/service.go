@@ -2,38 +2,36 @@ package selection
 
 import (
 	"database/sql"
-	"math/rand"
 	"regexp"
-	"sort"
 	"strconv"
-	"time"
 
 	"github.com/rs/zerolog"
 )
 
-type Service interface {
-	Create(CreateSelectionRequest) (Selection, error)
-	Parse(ParseSelectionRequest) ([]RankedOption, error)
-}
-
 type DefaultService struct {
 	logger     zerolog.Logger
 	repository Repository
+	sorter     Sorter
+	batcher    Batcher
 	regex      *regexp.Regexp
 }
 
-func NewDefaultService(logger zerolog.Logger, repository Repository) Service {
+func NewDefaultService(logger zerolog.Logger, repository Repository, sorter Sorter, batcher Batcher) Service {
 	regex := regexp.MustCompile("[0-9]+")
-	return &DefaultService{logger, repository, regex}
+	return &DefaultService{logger, repository, sorter, batcher, regex}
 }
 
-func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
+func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, error) {
 	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
 	if err == nil {
-		return selection, nil
+		s.logger.Info().
+			EmbedObject(selection).
+			Msg("found existing selection")
+
+		return s.createSelectionReply(req, selection), nil
 	}
 	if err != nil && err != sql.ErrNoRows {
-		return Selection{}, err
+		return SelectionReply{}, err
 	}
 
 	selection = Selection{
@@ -41,32 +39,29 @@ func (s DefaultService) Create(req CreateSelectionRequest) (Selection, error) {
 		InstanceId: req.InstanceId,
 		UserId:     req.UserId,
 		ServerId:   req.ServerId,
-		Batches:    []Batch{},
+		Options:    map[int]Option{},
 	}
 
-	sortedOptions := s.sortOptions(req.Options, req.SortMethod)
-
-	selection.Batches = s.buildBatches(sortedOptions, req.BatchSize)
+	for i, option := range req.Options {
+		selection.Options[i+1] = option
+	}
 
 	err = s.repository.CreateSelection(selection)
 	if err != nil {
-		return Selection{}, err
+		return SelectionReply{}, err
 	}
 
-	return selection, nil
+	s.logger.Info().
+		EmbedObject(selection).
+		Msg("created selection")
+
+	return s.createSelectionReply(req, selection), nil
 }
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
 	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
 	if err != nil {
 		return nil, err
-	}
-
-	options := map[int]Option{}
-	for _, batch := range selection.Batches {
-		for k, option := range batch.Options {
-			options[k] = option
-		}
 	}
 
 	choices := s.regex.FindAllString(req.Content, -1)
@@ -79,7 +74,7 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 			return nil, NewValidationError("%s is not a valid integer. %s", choice, err)
 		}
 
-		option, ok := options[c]
+		option, ok := selection.Options[c]
 		if !ok {
 			return nil, NewValidationError("could not find option for id: %d", c)
 		}
@@ -95,60 +90,30 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 	return rankedOptions, nil
 }
 
-func (s DefaultService) sortOptions(options []Option, method SortMethod) []Option {
-	switch method {
-	case Random:
-		return s.shuffleOptions(options)
-	case Alphabetical:
-		sort.Sort(ByAlphabetical(options))
-		return options
+func (s DefaultService) createSelectionReply(req CreateSelectionRequest, selection Selection) SelectionReply {
+	batchOptions := s.createBatchOptions(req, selection)
+
+	sortedBatchOptions := s.sorter.Sort(batchOptions, req.SortMethod, req.SortKey)
+
+	selectionReply := SelectionReply{
+		Selection: selection,
+		Batches:   s.batcher.CreateBatches(sortedBatchOptions, req.BatchSize),
 	}
 
-	return options
+	return selectionReply
 }
 
-func (s DefaultService) shuffleOptions(options []Option) []Option {
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
+func (s DefaultService) createBatchOptions(req CreateSelectionRequest, selection Selection) []BatchOption {
+	batchOptions := BatchOptions{}
 
-	for i := range options {
-		j := r.Intn(i + 1)
-		options[i], options[j] = options[j], options[i]
-	}
-
-	return options
-}
-
-func (s DefaultService) buildBatches(options []Option, batchSize int) []Batch {
-	numOptions := len(options)
-
-	if batchSize == 0 {
-		batchSize = numOptions
-	}
-
-	batches := []Batch{}
-
-	for i := 0; i < numOptions; i += batchSize {
-		nextBound := i + batchSize
-
-		if nextBound > numOptions {
-			nextBound = numOptions
+	for k, option := range selection.Options {
+		batchOption := BatchOption{
+			Number: k,
+			Option: option,
 		}
 
-		batchOptions := options[i:nextBound]
-
-		batch := Batch{
-			Start:   i + 1,
-			End:     nextBound,
-			Options: map[int]Option{},
-		}
-
-		for j, option := range batchOptions {
-			batch.Options[i+j+1] = option
-		}
-
-		batches = append(batches, batch)
+		batchOptions = append(batchOptions, batchOption)
 	}
 
-	return batches
+	return batchOptions
 }

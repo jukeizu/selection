@@ -64,7 +64,7 @@ func (r *repository) CreateSelection(selection Selection) error {
 		ON CONFLICT (appId, userId, serverId)
 		DO UPDATE SET instanceId = excluded.instanceId, options = excluded.options, updated = now()`
 
-	options, err := json.Marshal(selection.Batches)
+	options, err := json.Marshal(selection.Options)
 	if err != nil {
 		return fmt.Errorf("could not marshal options to JSON: %s", err)
 	}
@@ -75,7 +75,7 @@ func (r *repository) CreateSelection(selection Selection) error {
 }
 
 func (r *repository) Selection(appId, instanceId, userId, serverId string) (Selection, error) {
-	q := `SELECT appId, instanceId, userId, serverId, options FROM selection
+	q := `SELECT id, appId, instanceId, userId, serverId, options FROM selection
 	WHERE appId = $1 AND instanceId = $2 AND userId = $3 AND serverId = $4`
 
 	selection := Selection{}
@@ -83,6 +83,7 @@ func (r *repository) Selection(appId, instanceId, userId, serverId string) (Sele
 	jsonOptions := []byte{}
 
 	err := r.Db.QueryRow(q, appId, instanceId, userId, serverId).Scan(
+		&selection.Id,
 		&selection.AppId,
 		&selection.InstanceId,
 		&selection.UserId,
@@ -93,7 +94,7 @@ func (r *repository) Selection(appId, instanceId, userId, serverId string) (Sele
 		return Selection{}, err
 	}
 
-	err = json.Unmarshal(jsonOptions, &selection.Batches)
+	err = json.Unmarshal(jsonOptions, &selection.Options)
 	if err != nil {
 		return Selection{}, fmt.Errorf("could not unmarshal JSON to options: %s", err)
 	}

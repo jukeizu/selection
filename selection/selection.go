@@ -1,5 +1,9 @@
 package selection
 
+import (
+	"github.com/rs/zerolog"
+)
+
 type CreateSelectionRequest struct {
 	AppId      string
 	InstanceId string
@@ -7,6 +11,7 @@ type CreateSelectionRequest struct {
 	ServerId   string
 	BatchSize  int
 	SortMethod SortMethod
+	SortKey    string
 	Options    []Option
 }
 
@@ -30,38 +35,49 @@ type Selection struct {
 	InstanceId string
 	UserId     string
 	ServerId   string
-	Batches    []Batch
+	Options    map[int]Option
 }
 
-type SortMethod int
+type SelectionReply struct {
+	Selection Selection
+	Batches   []Batch
+}
+
+type SortMethod string
 
 const (
-	None SortMethod = iota
-	Random
-	Alphabetical
+	None         = SortMethod("none")
+	Number       = SortMethod("number")
+	Random       = SortMethod("random")
+	Alphabetical = SortMethod("alphabetical")
+	Metadata     = SortMethod("metadata")
 )
 
 type Batch struct {
-	Start   int
-	End     int
-	Options map[int]Option
+	Options []BatchOption
 }
+
+type BatchOption struct {
+	Number int
+	Option Option
+}
+
+type BatchOptions []BatchOption
 
 type RankedOption struct {
 	Rank   int
 	Option Option
 }
 
-type ByAlphabetical []Option
-
-func (s ByAlphabetical) Len() int {
-	return len(s)
+type Service interface {
+	Create(CreateSelectionRequest) (SelectionReply, error)
+	Parse(ParseSelectionRequest) ([]RankedOption, error)
 }
 
-func (s ByAlphabetical) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s ByAlphabetical) Less(i, j int) bool {
-	return s[i].Content < s[j].Content
+func (selection Selection) MarshalZerologObject(e *zerolog.Event) {
+	e.Str("selection.Id", selection.Id).
+		Str("selection.AppId", selection.AppId).
+		Str("selection.InstanceId", selection.InstanceId).
+		Str("selection.UserId", selection.UserId).
+		Str("selection.ServerId", selection.ServerId)
 }
