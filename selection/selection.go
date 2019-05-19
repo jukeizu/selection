@@ -46,7 +46,6 @@ type SelectionReply struct {
 type SortMethod string
 
 const (
-	None         = SortMethod("none")
 	Number       = SortMethod("number")
 	Random       = SortMethod("random")
 	Alphabetical = SortMethod("alphabetical")
