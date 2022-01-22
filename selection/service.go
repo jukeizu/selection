@@ -11,16 +11,18 @@ import (
 )
 
 type DefaultService struct {
-	logger     zerolog.Logger
-	repository Repository
-	sorter     Sorter
-	batcher    Batcher
-	regex      *regexp.Regexp
+	logger          zerolog.Logger
+	repository      Repository
+	sorter          Sorter
+	batcher         Batcher
+	parseRegex      *regexp.Regexp
+	validationRegex *regexp.Regexp
 }
 
 func NewDefaultService(logger zerolog.Logger, repository Repository, sorter Sorter, batcher Batcher) Service {
-	regex := regexp.MustCompile("[0-9]+")
-	return &DefaultService{logger, repository, sorter, batcher, regex}
+	parseRegex := regexp.MustCompile(`\b\d+\b`)
+	validationRegex := regexp.MustCompile(`^[\d\s]+$`)
+	return &DefaultService{logger, repository, sorter, batcher, parseRegex, validationRegex}
 }
 
 func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, error) {
@@ -65,24 +67,28 @@ func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, erro
 }
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
+	if !s.validationRegex.MatchString(req.Content) {
+		return nil, NewValidationError("Input must only container number values.")
+	}
+
 	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
 	if err != nil {
 		return nil, err
 	}
 
-	choices := s.regex.FindAllString(req.Content, -1)
+	choices := s.parseRegex.FindAllString(req.Content, -1)
 
 	rankedOptions := []RankedOption{}
 
 	for i, choice := range choices {
 		c, err := strconv.Atoi(choice)
 		if err != nil {
-			return nil, NewValidationError("%s is not a valid integer. %s", choice, err)
+			return nil, NewValidationError("Input `%s` is not a valid selection.", choice)
 		}
 
 		option, ok := selection.Options[c]
 		if !ok {
-			return nil, NewValidationError("could not find option for id: %d", c)
+			return nil, NewValidationError("Input `%d` is not a valid selection.", c)
 		}
 
 		rankedOption := RankedOption{
