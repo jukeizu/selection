@@ -68,7 +68,7 @@ func (s DefaultService) Create(req CreateSelectionRequest) (SelectionReply, erro
 
 func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error) {
 	if !s.validationRegex.MatchString(req.Content) {
-		return nil, NewValidationError("Input must only container number values.")
+		return nil, NewValidationError("Input may only contain numeric values.")
 	}
 
 	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
