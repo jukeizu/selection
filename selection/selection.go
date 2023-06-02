@@ -66,6 +66,7 @@ type BatchOptions []BatchOption
 
 type RankedOption struct {
 	Rank   int
+	Number int
 	Option Option
 }
 

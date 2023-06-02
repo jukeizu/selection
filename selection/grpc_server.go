@@ -112,6 +112,7 @@ func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.Pars
 	for _, dtoRankedOption := range dtoRankedOptions {
 		rankedOption := &selectionpb.RankedOption{
 			Rank:   int32(dtoRankedOption.Rank),
+			Number: int32(dtoRankedOption.Number),
 			Option: dtoToOption(dtoRankedOption.Option),
 		}
 
