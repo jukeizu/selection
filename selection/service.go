@@ -93,6 +93,7 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 
 		rankedOption := RankedOption{
 			Rank:   i,
+			Number: c,
 			Option: option,
 		}
 

@@ -31,7 +31,7 @@ var (
 	flagVersion = false
 	flagServer  = true
 
-	grpcPort       = "50052"
+	grpcPort       = "50055"
 	dbAddress      = "root@localhost:26257"
 	serviceAddress = "localhost:" + grpcPort
 )
