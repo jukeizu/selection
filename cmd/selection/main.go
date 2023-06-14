@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 )
 
 var Version = ""
@@ -95,6 +96,7 @@ func main() {
 		selectionService := selection.NewDefaultService(logger, repository, sorter, batcher)
 		selectionServer := selection.NewGrpcServer(selectionService)
 		selectionpb.RegisterSelectionServiceServer(grpcServer, selectionServer)
+		reflection.Register(grpcServer)
 
 		grpcAddr := ":" + grpcPort
 
