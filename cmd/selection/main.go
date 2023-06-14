@@ -94,7 +94,7 @@ func main() {
 
 		selectionService := selection.NewDefaultService(logger, repository, sorter, batcher)
 		selectionServer := selection.NewGrpcServer(selectionService)
-		selectionpb.RegisterSelectionServer(grpcServer, selectionServer)
+		selectionpb.RegisterSelectionServiceServer(grpcServer, selectionServer)
 
 		grpcAddr := ":" + grpcPort
 
