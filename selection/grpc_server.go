@@ -16,7 +16,7 @@ func NewGrpcServer(service Service) GrpcServer {
 	return GrpcServer{service}
 }
 
-func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionReply, error) {
+func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.CreateSelectionRequest) (*selectionpb.CreateSelectionResponse, error) {
 	selection, err := s.service.Create(createSelectionRequestToDto(req))
 	if err != nil {
 		return nil, toStatusErr(err)
@@ -25,7 +25,7 @@ func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.Create
 	return dtoToCreateSelectionReply(selection), nil
 }
 
-func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionReply, error) {
+func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionResponse, error) {
 	rankedOptions, err := s.service.Parse(parseSelectionRequestToDto(req))
 	if err != nil {
 		return nil, toStatusErr(err)
@@ -59,8 +59,8 @@ func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) Create
 	return c
 }
 
-func dtoToCreateSelectionReply(selectionReply SelectionReply) *selectionpb.CreateSelectionReply {
-	reply := &selectionpb.CreateSelectionReply{
+func dtoToCreateSelectionReply(selectionReply SelectionReply) *selectionpb.CreateSelectionResponse {
+	reply := &selectionpb.CreateSelectionResponse{
 		Batches: []*selectionpb.Batch{},
 	}
 
@@ -106,8 +106,8 @@ func parseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSel
 	return p
 }
 
-func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.ParseSelectionReply {
-	reply := &selectionpb.ParseSelectionReply{}
+func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.ParseSelectionResponse {
+	reply := &selectionpb.ParseSelectionResponse{}
 
 	for _, dtoRankedOption := range dtoRankedOptions {
 		rankedOption := &selectionpb.RankedOption{
