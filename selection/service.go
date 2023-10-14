@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"math/rand"
 	"regexp"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -101,6 +103,48 @@ func (s DefaultService) Parse(req ParseSelectionRequest) ([]RankedOption, error)
 	}
 
 	return rankedOptions, nil
+}
+
+func (s DefaultService) Query(req QuerySelectionRequest) (QuerySelectionReply, error) {
+	if req.Options == nil || len(req.Options) < 1 {
+		return QuerySelectionReply{}, nil
+	}
+
+	selection, err := s.repository.Selection(req.AppId, req.InstanceId, req.UserId, req.ServerId)
+	if err != nil {
+		return QuerySelectionReply{}, err
+	}
+
+	if selection.Options == nil || len(selection.Options) < 1 {
+		return QuerySelectionReply{}, err
+	}
+
+	rankedOptions := []RankedOption{}
+
+	for number, option := range selection.Options {
+		rank, ok := req.Options[option.OptionId]
+		if ok {
+			rankedOptions = append(rankedOptions, RankedOption{
+				Rank:   int(rank),
+				Number: number,
+				Option: option,
+			})
+		}
+	}
+
+	sort.SliceStable(rankedOptions, func(i, j int) bool {
+		return rankedOptions[i].Rank < rankedOptions[j].Rank
+	})
+
+	content := make([]string, len(rankedOptions))
+	for i, rankedOption := range rankedOptions {
+		content[i] = strconv.Itoa(int(rankedOption.Number))
+	}
+
+	return QuerySelectionReply{
+		Options: rankedOptions,
+		Content: strings.Join(content, " "),
+	}, nil
 }
 
 func (s DefaultService) createSelectionReply(req CreateSelectionRequest, selection Selection) SelectionReply {

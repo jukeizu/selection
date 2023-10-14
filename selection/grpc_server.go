@@ -26,12 +26,38 @@ func (s GrpcServer) CreateSelection(ctx context.Context, req *selectionpb.Create
 }
 
 func (s GrpcServer) ParseSelection(ctx context.Context, req *selectionpb.ParseSelectionRequest) (*selectionpb.ParseSelectionResponse, error) {
-	rankedOptions, err := s.service.Parse(parseSelectionRequestToDto(req))
+	rankedOptions, err := s.service.Parse(ParseSelectionRequest{
+		AppId:      req.AppId,
+		InstanceId: req.InstanceId,
+		UserId:     req.UserId,
+		ServerId:   req.ServerId,
+		Content:    req.Content,
+	})
 	if err != nil {
 		return nil, toStatusErr(err)
 	}
 
-	return dtoToParseSelectionReply(rankedOptions), nil
+	return &selectionpb.ParseSelectionResponse{
+		RankedOptions: dtoToRankedOption(rankedOptions),
+	}, nil
+}
+
+func (s GrpcServer) QuerySelection(ctx context.Context, req *selectionpb.QuerySelectionRequest) (*selectionpb.QuerySelectionResponse, error) {
+	queryReply, err := s.service.Query(QuerySelectionRequest{
+		AppId:      req.AppId,
+		InstanceId: req.InstanceId,
+		UserId:     req.UserId,
+		ServerId:   req.ServerId,
+		Options:    req.Options,
+	})
+	if err != nil {
+		return nil, toStatusErr(err)
+	}
+
+	return &selectionpb.QuerySelectionResponse{
+		Options: dtoToRankedOption(queryReply.Options),
+		Content: queryReply.Content,
+	}, nil
 }
 
 func createSelectionRequestToDto(req *selectionpb.CreateSelectionRequest) CreateSelectionRequest {
@@ -94,20 +120,8 @@ func dtoToOption(dtoOption Option) *selectionpb.Option {
 	return option
 }
 
-func parseSelectionRequestToDto(req *selectionpb.ParseSelectionRequest) ParseSelectionRequest {
-	p := ParseSelectionRequest{
-		AppId:      req.AppId,
-		InstanceId: req.InstanceId,
-		UserId:     req.UserId,
-		ServerId:   req.ServerId,
-		Content:    req.Content,
-	}
-
-	return p
-}
-
-func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.ParseSelectionResponse {
-	reply := &selectionpb.ParseSelectionResponse{}
+func dtoToRankedOption(dtoRankedOptions []RankedOption) []*selectionpb.RankedOption {
+	rankedOptions := []*selectionpb.RankedOption{}
 
 	for _, dtoRankedOption := range dtoRankedOptions {
 		rankedOption := &selectionpb.RankedOption{
@@ -116,10 +130,10 @@ func dtoToParseSelectionReply(dtoRankedOptions []RankedOption) *selectionpb.Pars
 			Option: dtoToOption(dtoRankedOption.Option),
 		}
 
-		reply.RankedOptions = append(reply.RankedOptions, rankedOption)
+		rankedOptions = append(rankedOptions, rankedOption)
 	}
 
-	return reply
+	return rankedOptions
 }
 
 func toStatusErr(err error) error {
