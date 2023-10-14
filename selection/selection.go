@@ -44,6 +44,19 @@ type SelectionReply struct {
 	Batches   []Batch
 }
 
+type QuerySelectionRequest struct {
+	AppId      string
+	InstanceId string
+	UserId     string
+	ServerId   string
+	Options    map[string]int32
+}
+
+type QuerySelectionReply struct {
+	Options []RankedOption
+	Content string
+}
+
 type SortMethod string
 
 const (
@@ -73,6 +86,7 @@ type RankedOption struct {
 type Service interface {
 	Create(CreateSelectionRequest) (SelectionReply, error)
 	Parse(ParseSelectionRequest) ([]RankedOption, error)
+	Query(QuerySelectionRequest) (QuerySelectionReply, error)
 }
 
 func (selection Selection) MarshalZerologObject(e *zerolog.Event) {
